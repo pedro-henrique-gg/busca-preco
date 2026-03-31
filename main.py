@@ -53,31 +53,79 @@ def busca_google_shopping(produto, termos_banidos, preco_min, preco_max):
 
     time.sleep(3)
     lista_ofertas = []
-    lista_resultados = espera.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "mnr-c")))
-    for resultado in lista_resultados:
-        nome = resultado.find_element(By.CLASS_NAME, "bXPcId").text
-        nome = nome.lower()
+    # classe original = dQK82e
+    # classe nome = gkQHve
+    # classe preço = lmQWe
+    # classe link = sCXXQd
+    try:
+        lista_resultados = espera.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "mnr-c")))
+        for resultado in lista_resultados:
+            nome = resultado.find_element(By.CLASS_NAME, "bXPcId").text
+            nome = nome.lower()
 
-        tem_termos_banidos = False
-        for palavra in lista_termos_banidos:
-            if palavra in nome:
-                tem_termos_banidos = True
+            tem_termos_banidos = False
+            for palavra in lista_termos_banidos:
+                if palavra in nome:
+                    tem_termos_banidos = True
 
-        tem_termos_produto = True
-        for palavra in lista_termos_produto:
-            if palavra not in nome:
-                tem_termos_produto = False
+            tem_termos_produto = True
+            for palavra in lista_termos_produto:
+                if palavra not in nome:
+                    tem_termos_produto = False
 
-        if tem_termos_banidos == False and tem_termos_produto == True:
-            preco = resultado.find_element(By.CLASS_NAME, "VbBaOe").text
-            preco = preco.replace("R$", "").replace(".", "").replace(",", ".")
-            preco = float(preco)
+            if tem_termos_banidos == False and tem_termos_produto == True:
+                try:
+                    preco = resultado.find_element(By.CLASS_NAME, "VbBaOe").text
+                    preco = preco.replace("R$", "").replace(".", "").replace(",", ".")
+                    preco = float(preco)
 
-            preco_min = float(preco_min)
-            preco_max = float(preco_max)
-            if preco_min <= preco <= preco_max:
-                link = resultado.find_element(By.CLASS_NAME, "plantl").get_attribute("href")
-                lista_ofertas.append((nome, preco, link))
+                    preco_min = float(preco_min)
+                    preco_max = float(preco_max)
+                    if preco_min <= preco <= preco_max:
+                        link = resultado.find_element(By.CLASS_NAME, "plantl").get_attribute("href")
+                        lista_ofertas.append((nome, preco, link))
+
+                except:
+                    continue
+
+    except:
+        espera_2 = WebDriverWait(navegador, 20)
+        lista_resultados = espera_2.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "UC8ZCe")))
+
+        for resultado in lista_resultados:
+            try:
+                nome = resultado.find_element(By.CLASS_NAME, "gkQHve").text
+                nome = nome.lower()
+            except:
+                continue
+
+            tem_termos_banidos = False
+            for palavra in lista_termos_banidos:
+                if palavra in nome:
+                    tem_termos_banidos = True
+
+            tem_termos_produto = True
+            for palavra in lista_termos_produto:
+                if palavra not in nome:
+                    tem_termos_produto = False
+
+            if tem_termos_banidos == False and tem_termos_produto == True:
+                try:
+                    preco = resultado.find_element(By.CLASS_NAME, "lmQWe").text
+                    preco = preco.replace("R$̉/xa0", "").replace("R$", "").replace(".", "").replace(",", ".")[0]
+                    preco = float(preco)
+
+                    preco_min = float(preco_min)
+                    preco_max = float(preco_max)
+                    if preco_min <= preco <= preco_max:
+                        resultado.click()
+                        time.sleep(2)
+                        link = navegador.current_url
+                        navegador.back()
+                        time.sleep(2)
+                        lista_ofertas.append((nome, preco, link))
+                except:
+                    continue
 
     return lista_ofertas
 
@@ -153,9 +201,9 @@ def criar_tabela_ofertas(tabela_produtos):
             tabela_buscape = pd.DataFrame(lista_oferta_buscape, columns=["produto", "preco", "link"])
             tabela_ofertas = pd.concat([tabela_ofertas, tabela_buscape], ignore_index=True)
 
-    tabela_ofertas.to_excel("ofertas.xlsx", index=False)
+    tabela_ofertas.to_excel("dataframes/ofertas.xlsx", index=False)
 
-    return "ofertas.xlsx"
+    return "dataframes/ofertas.xlsx"
 
 def mandar_email(arquivo):
     remetente = os.getenv("gmail_remetente")
@@ -181,7 +229,7 @@ def mandar_email(arquivo):
         servidor.send_message(msg)
         print("Email enviado com sucesso!")
 
-tabela_produtos = pd.read_excel("buscas.xlsx")
+tabela_produtos = pd.read_excel("dataframes/buscas.xlsx")
 mandar_email(criar_tabela_ofertas(tabela_produtos))
 
 #TODO:
@@ -189,4 +237,3 @@ mandar_email(criar_tabela_ofertas(tabela_produtos))
 # 2- FAZER A DESCRIÇÃO DAS FUNÇÕES
 # 3- CRIAR O ARQUIVO README
 # 4- RESOLVER O PROBLEMA DO GOOGLE SHOPPING COM DUAS OPÇÕES DE PÁGINA (OPÇÕES EM ALTA)
-# 5- RESOLVER PROBLEMA DOS + IMPOSTOS
