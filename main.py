@@ -53,34 +53,23 @@ def busca_google_shopping(produto, termos_banidos, preco_min, preco_max):
 
     time.sleep(3)
     lista_ofertas = []
-    # classe original = dQK82e
-    # classe nome = gkQHve
-    # classe preço = lmQWe
-    # classe link = sCXXQd
+    preco_min = float(preco_min)
+    preco_max = float(preco_max)
     try:
         lista_resultados = espera.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "mnr-c")))
         for resultado in lista_resultados:
             nome = resultado.find_element(By.CLASS_NAME, "bXPcId").text
             nome = nome.lower()
 
-            tem_termos_banidos = False
-            for palavra in lista_termos_banidos:
-                if palavra in nome:
-                    tem_termos_banidos = True
+            tem_termos_banidos = any(palavra in nome for palavra in lista_termos_banidos)
+            tem_termos_produto = all(palavra in nome for palavra in lista_termos_produto)
 
-            tem_termos_produto = True
-            for palavra in lista_termos_produto:
-                if palavra not in nome:
-                    tem_termos_produto = False
-
-            if tem_termos_banidos == False and tem_termos_produto == True:
+            if not tem_termos_banidos and tem_termos_produto:
                 try:
                     preco = resultado.find_element(By.CLASS_NAME, "VbBaOe").text
                     preco = preco.replace("R$", "").replace(".", "").replace(",", ".")
                     preco = float(preco)
 
-                    preco_min = float(preco_min)
-                    preco_max = float(preco_max)
                     if preco_min <= preco <= preco_max:
                         link = resultado.find_element(By.CLASS_NAME, "plantl").get_attribute("href")
                         lista_ofertas.append((nome, preco, link))
@@ -99,24 +88,15 @@ def busca_google_shopping(produto, termos_banidos, preco_min, preco_max):
             except:
                 continue
 
-            tem_termos_banidos = False
-            for palavra in lista_termos_banidos:
-                if palavra in nome:
-                    tem_termos_banidos = True
+            tem_termos_banidos = any(palavra in nome for palavra in lista_termos_banidos)
+            tem_termos_produto = all(palavra in nome for palavra in lista_termos_produto)
 
-            tem_termos_produto = True
-            for palavra in lista_termos_produto:
-                if palavra not in nome:
-                    tem_termos_produto = False
-
-            if tem_termos_banidos == False and tem_termos_produto == True:
+            if not tem_termos_banidos and tem_termos_produto:
                 try:
                     preco = resultado.find_element(By.CLASS_NAME, "lmQWe").text
-                    preco = preco.replace("R$̉/xa0", "").replace("R$", "").replace(".", "").replace(",", ".")[0]
+                    preco = preco.replace("R$", "").replace(".", "").replace(",", ".")
                     preco = float(preco)
 
-                    preco_min = float(preco_min)
-                    preco_max = float(preco_max)
                     if preco_min <= preco <= preco_max:
                         resultado.click()
                         time.sleep(2)
@@ -127,6 +107,7 @@ def busca_google_shopping(produto, termos_banidos, preco_min, preco_max):
                 except:
                     continue
 
+    navegador.quit()
     return lista_ofertas
 
 def busca_buscape(produto, termos_banidos, preco_min, preco_max):
@@ -154,32 +135,26 @@ def busca_buscape(produto, termos_banidos, preco_min, preco_max):
     time.sleep(5)
 
     lista_ofertas = []
+    preco_min = float(preco_min)
+    preco_max = float(preco_max)
     lista_resultados = espera.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "Hits_ProductCard__Bonl_")))
     for resultado in lista_resultados:
         nome = resultado.find_element(By.CLASS_NAME, "Name_OrqProductCard_Name__KsaTM").text
         nome = nome.lower()
 
-        tem_termos_banidos = False
-        for palavra in lista_termos_banidos:
-            if palavra in nome:
-                tem_termos_banidos = True
+        tem_termos_banidos = any(palavra in nome for palavra in lista_termos_banidos)
+        tem_termos_produto = all(palavra in nome for palavra in lista_termos_produto)
 
-        tem_termos_produto = True
-        for palavra in lista_termos_produto:
-            if palavra not in nome:
-                tem_termos_produto = False
-
-        if tem_termos_banidos == False and tem_termos_produto == True:
+        if not tem_termos_banidos and tem_termos_produto:
             preco = resultado.find_element(By.CLASS_NAME, "Price_OrqProductCard_Price__TNBZB").text
             preco = preco.replace("R$", "").replace(".", "").replace(",", ".")
             preco = float(preco)
 
-            preco_min = float(preco_min)
-            preco_max = float(preco_max)
             if preco_min <= preco <= preco_max:
                 link = resultado.find_element(By.CLASS_NAME, "ClickableArea_OrqProductCard_ClickableArea__jkrb3").get_attribute("href")
                 lista_ofertas.append((nome, preco, link))
 
+    navegador.quit()
     return lista_ofertas
 
 def criar_tabela_ofertas(tabela_produtos):
@@ -233,7 +208,5 @@ tabela_produtos = pd.read_excel("dataframes/buscas.xlsx")
 mandar_email(criar_tabela_ofertas(tabela_produtos))
 
 #TODO:
-# 1- OTIMIZAR O CÓDIGO
 # 2- FAZER A DESCRIÇÃO DAS FUNÇÕES
 # 3- CRIAR O ARQUIVO README
-# 4- RESOLVER O PROBLEMA DO GOOGLE SHOPPING COM DUAS OPÇÕES DE PÁGINA (OPÇÕES EM ALTA)
