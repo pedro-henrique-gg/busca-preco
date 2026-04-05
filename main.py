@@ -248,6 +248,3 @@ def mandar_email(arquivo):
 
 tabela_produtos = pd.read_excel("dataframes/buscas.xlsx")
 mandar_email(criar_tabela_ofertas(tabela_produtos))
-
-#TODO:
-# 3- CRIAR O ARQUIVO README
