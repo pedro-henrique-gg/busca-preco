@@ -19,6 +19,12 @@ import time
 load_dotenv()
 
 def criar_navegador ():
+    """
+    Cria e configura uma instância do navegador com as opções
+    necessárias para a execução no Linux e para evitar a detecção de bots.
+
+    :return: webdriver.Chrome: instância do navegador configurada e pronta para uso.
+    """
     options = Options()
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
@@ -28,6 +34,17 @@ def criar_navegador ():
     return webdriver.Chrome(service=service, options=options)
 
 def busca_google_shopping(produto, termos_banidos, preco_min, preco_max):
+    """
+    Realiza a busca de um produto no Google Shopping e retorna as ofertas
+    que atendem aos critérios de filtro informados.
+
+    :param produto (str): Nome do produto a ser pesquisado.
+    :param termos_banidos (str): Palavras separadas por espaço que, se presentes
+        no nome do produto, fazem o resultado ser ignorado.
+    :param preco_min (float): Preço mínimo aceito para a oferta.
+    :param preco_max (float): Preço máximo aceito para a oferta.
+    :return: list: lista de tuplas (nome, preco, link) com as ofertas encontradas.
+    """
 
     navegador = criar_navegador()
     espera = WebDriverWait(navegador, 20)
@@ -111,6 +128,17 @@ def busca_google_shopping(produto, termos_banidos, preco_min, preco_max):
     return lista_ofertas
 
 def busca_buscape(produto, termos_banidos, preco_min, preco_max):
+    """
+    Realiza a busca de um produto no Buscapé e retorna as ofertas
+    que atendem aos critérios de filtro informados.
+
+    :param produto (str): Nome do produto a ser pesquisado.
+    :param termos_banidos (str): Palavras separadas por espaço que, se presentes
+        no nome do produto, fazem o resultado ser ignorado.
+    :param preco_min (float): Preço mínimo aceito para a oferta.
+    :param preco_max (float): Preço máximo aceito para a oferta.
+    :return: list: lista de tuplas (nome, preco, link) com as ofertas encontradas.
+    """
 
     navegador = criar_navegador()
     espera = WebDriverWait(navegador, 20)
@@ -158,6 +186,14 @@ def busca_buscape(produto, termos_banidos, preco_min, preco_max):
     return lista_ofertas
 
 def criar_tabela_ofertas(tabela_produtos):
+    """
+    Itera sobre a tabela produtos, chama as funções de busca para cada
+    produto e consolida todas as ofertas encontradas num arquivo Excel.
+
+    :param tabela_produtos (DataFrame): Tabela com colunas Nome, Termos Banidos,
+        Preço Mńimo e Preço Máximo.
+    :return (str): Caminho do arquivo Excel gerado com as ofertas encontradas.
+    """
     tabela_ofertas = pd.DataFrame()
 
     for linha in tabela_produtos.index:
@@ -181,6 +217,12 @@ def criar_tabela_ofertas(tabela_produtos):
     return "dataframes/ofertas.xlsx"
 
 def mandar_email(arquivo):
+    """
+    Envia um email com o arquivo de ofertas em anexo para o destinatário
+    configurado nas variáveis de embiente.
+
+    :param arquivo (str): Caminho do arquivo a ser enviado como anexo.
+    """
     remetente = os.getenv("gmail_remetente")
     destinatario = os.getenv("gmail_destinatario")
     senha = os.getenv("gmail_senha")
@@ -208,5 +250,4 @@ tabela_produtos = pd.read_excel("dataframes/buscas.xlsx")
 mandar_email(criar_tabela_ofertas(tabela_produtos))
 
 #TODO:
-# 2- FAZER A DESCRIÇÃO DAS FUNÇÕES
 # 3- CRIAR O ARQUIVO README
